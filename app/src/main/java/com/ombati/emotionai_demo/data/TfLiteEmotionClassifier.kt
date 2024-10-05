@@ -2,6 +2,7 @@ package com.ombati.emotionai_demo.data
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import android.view.Surface
 import com.ombati.emotionai_demo.domain.EmotionClassifier
 import com.ombati.emotionai_demo.domain.EmotionPrediction
@@ -32,11 +33,16 @@ class TfLiteEmotionClassifier(
         try {
             classifier = ImageClassifier.createFromFileAndOptions(
                 context,
-                "imageModel.tflite",
+                "imageModel.tflite",  // Ensure the file is in the assets folder
                 options
             )
+            Log.d("TfLiteEmotionClassifier", "Model loaded successfully")
         } catch (e: IllegalStateException) {
             e.printStackTrace()
+            Log.e("TfLiteEmotionClassifier", "Failed to load model: ${e.localizedMessage}")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e("TfLiteEmotionClassifier", "Unexpected error: ${e.localizedMessage}")
         }
     }
 
@@ -56,6 +62,7 @@ class TfLiteEmotionClassifier(
 
         val emotionScores = results?.flatMap { classifications ->
             classifications.categories.map { category ->
+                Log.d("EmotionClassifier", "Emotion: ${category.displayName}, Score: ${category.score}")
                 category.displayName to category.score
             }
         }?.toMap() ?: emptyMap()
