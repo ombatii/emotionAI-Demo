@@ -6,15 +6,17 @@ import android.util.Log
 import android.view.Surface
 import com.ombati.emotionai_demo.domain.EmotionClassifier
 import com.ombati.emotionai_demo.domain.EmotionPrediction
+import org.tensorflow.lite.DataType
+import org.tensorflow.lite.support.common.ops.NormalizeOp
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.image.ops.ResizeOp
 import org.tensorflow.lite.task.core.BaseOptions
 import org.tensorflow.lite.task.core.vision.ImageProcessingOptions
 import org.tensorflow.lite.task.vision.classifier.ImageClassifier
 
 class TfLiteEmotionClassifier(
     private val context: Context,
-    private val threshold: Float = 0.5f,
     private val maxResults: Int = 7
 ) : EmotionClassifier {
 
@@ -27,7 +29,6 @@ class TfLiteEmotionClassifier(
         val options = ImageClassifier.ImageClassifierOptions.builder()
             .setBaseOptions(baseOptions)
             .setMaxResults(maxResults)
-            .setScoreThreshold(threshold)
             .build()
 
         try {
@@ -46,24 +47,38 @@ class TfLiteEmotionClassifier(
         }
     }
 
+    // Corrected image classification code.
     override fun classify(bitmap: Bitmap, rotation: Int): EmotionPrediction {
         if (classifier == null) {
             setupClassifier()
         }
 
-        val imageProcessor = ImageProcessor.Builder().build()
-        val tensorImage = imageProcessor.process(TensorImage.fromBitmap(bitmap))
+        val inputSize = 150
+        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, inputSize, inputSize, false)
+
+        val tensorImage = TensorImage(DataType.UINT8)
+        tensorImage.load(resizedBitmap)
+
+        val imageProcessor = ImageProcessor.Builder()
+            .add(ResizeOp(inputSize, inputSize, ResizeOp.ResizeMethod.BILINEAR))
+            .add(NormalizeOp(0.0f, 255.0f))  // Ensure proper normalization
+            .build()
+
+        val processedImage = imageProcessor.process(tensorImage)
 
         val imageProcessingOptions = ImageProcessingOptions.builder()
             .setOrientation(getOrientationFromRotation(rotation))
             .build()
 
-        val results = classifier?.classify(tensorImage, imageProcessingOptions)
+        val results = classifier?.classify(processedImage, imageProcessingOptions)
+
+        Log.d("TfLiteEmotionClassifier", "Raw results: $results")
 
         val emotionScores = results?.flatMap { classifications ->
             classifications.categories.map { category ->
                 Log.d("EmotionClassifier", "Emotion: ${category.displayName}, Score: ${category.score}")
-                category.displayName to category.score
+                val name = category.displayName.ifEmpty { "Category #${category.index}" }
+                name to category.score
             }
         }?.toMap() ?: emptyMap()
 
@@ -87,3 +102,4 @@ class TfLiteEmotionClassifier(
         }
     }
 }
+
