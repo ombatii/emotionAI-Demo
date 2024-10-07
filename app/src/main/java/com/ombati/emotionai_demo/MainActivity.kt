@@ -38,8 +38,6 @@ import com.ombati.emotionai_demo.ui.theme.EmotionAIDemoTheme
 class MainActivity : ComponentActivity() {
     private val tag = "EmotionAIDemo"
     private lateinit var controller: LifecycleCameraController
-
-    // Use the ViewModel
     private val viewModel: TfLiteEmotionClassifierViewModel by viewModels {
         TfLiteEmotionClassifierViewModelFactory(TfLiteEmotionClassifier(applicationContext))
     }
@@ -53,7 +51,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             EmotionAIDemoTheme {
-                // Observe the emotion prediction LiveData
                 val emotionPrediction by viewModel.emotionPrediction.observeAsState(
                     initial = EmotionPrediction(0f, 0f, 0f, 0f, 0f, 0f, 0f)
                 )
@@ -62,7 +59,7 @@ class MainActivity : ComponentActivity() {
                     EmotionImageAnalyzer(
                         classifier = TfLiteEmotionClassifier(applicationContext),
                         onResults = { prediction: EmotionPrediction ->
-                            viewModel.updateEmotionPrediction(prediction) // Update prediction directly
+                            viewModel.updateEmotionPrediction(prediction)
                         }
                     )
                 }
@@ -74,7 +71,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // Update UI and log emotions on each update
+
                 UpdateUI(emotionPrediction)
             }
         }
@@ -83,15 +80,12 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun UpdateUI(prediction: EmotionPrediction?) {
         prediction?.let {
-            // Log the probabilities for each emotion on change
             val previousPrediction = remember { mutableStateOf(it) }
 
             if (previousPrediction.value != it) {
                 logEmotionProbabilities(it)
                 previousPrediction.value = it
             }
-
-            // Get the highest emotion classification and update UI
             val highestClassification = getHighestEmotion(it)
 
             Box(modifier = Modifier.fillMaxSize()) {
@@ -116,7 +110,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // Add the IconButton just below the CameraPreview
                 IconButton(
                     onClick = {
                         controller.cameraSelector =

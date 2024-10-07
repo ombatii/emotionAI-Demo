@@ -85,6 +85,11 @@ dependencies {
     implementation("org.tensorflow:tensorflow-lite-gpu-delegate-plugin:0.4.0")
     implementation("org.tensorflow:tensorflow-lite-gpu:2.9.0")
 
+    implementation ("com.google.mlkit:face-detection:16.1.7")
+
+
+
+
 
 
 

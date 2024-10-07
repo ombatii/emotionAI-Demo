@@ -33,7 +33,7 @@ class TfLiteEmotionClassifier(
         try {
             classifier = ImageClassifier.createFromFileAndOptions(
                 context,
-                "ssdrImageModel.tflite",  // Ensure the file is in the assets folder
+                "ssdrImageModel.tflite",
                 options
             )
             Log.d("TfLiteEmotionClassifier", "Model loaded successfully")
@@ -59,7 +59,7 @@ class TfLiteEmotionClassifier(
 
         val imageProcessor = ImageProcessor.Builder()
             .add(ResizeOp(inputSize, inputSize, ResizeOp.ResizeMethod.BILINEAR))
-            .add(NormalizeOp(0.0f, 255.0f))  // Ensure proper normalization
+            .add(NormalizeOp(0.0f, 255.0f))
             .build()
 
         val processedImage = imageProcessor.process(tensorImage)
@@ -82,7 +82,6 @@ class TfLiteEmotionClassifier(
         Log.d("emotionScores","Emotion score: ${emotionScores["Category #0"]}")
 
 
-        // Convert the emotionScores map to EmotionPrediction object
         return EmotionPrediction(
             angry = emotionScores["Category #0"] ?: 0f,
             disgust = emotionScores["Category #1"] ?: 0f,
