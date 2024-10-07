@@ -6,13 +6,20 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.camera.core.CameraSelector
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cameraswitch
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -24,11 +31,18 @@ import com.ombati.emotionai_demo.data.TfLiteEmotionClassifier
 import com.ombati.emotionai_demo.domain.EmotionPrediction
 import com.ombati.emotionai_demo.presentation.CameraPreview
 import com.ombati.emotionai_demo.presentation.EmotionImageAnalyzer
+import com.ombati.emotionai_demo.presentation.TfLiteEmotionClassifierViewModel
+import com.ombati.emotionai_demo.presentation.TfLiteEmotionClassifierViewModelFactory
 import com.ombati.emotionai_demo.ui.theme.EmotionAIDemoTheme
 
 class MainActivity : ComponentActivity() {
-    private val TAG = "EmotionAIDemo"
-    private lateinit var controller: LifecycleCameraController // Declare controller here
+    private val tag = "EmotionAIDemo"
+    private lateinit var controller: LifecycleCameraController
+
+    // Use the ViewModel
+    private val viewModel: TfLiteEmotionClassifierViewModel by viewModels {
+        TfLiteEmotionClassifierViewModelFactory(TfLiteEmotionClassifier(applicationContext))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,21 +53,20 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             EmotionAIDemoTheme {
-                var emotionPrediction by remember {
-                    mutableStateOf(EmotionPrediction(0f, 0f, 0f, 0f, 0f, 0f, 0f))
-                }
+                // Observe the emotion prediction LiveData
+                val emotionPrediction by viewModel.emotionPrediction.observeAsState(
+                    initial = EmotionPrediction(0f, 0f, 0f, 0f, 0f, 0f, 0f)
+                )
 
                 val analyzer = remember {
                     EmotionImageAnalyzer(
                         classifier = TfLiteEmotionClassifier(applicationContext),
-                        onResults = {
-                            emotionPrediction = it
-                            updateUI(it) // Update UI on new results
+                        onResults = { prediction: EmotionPrediction ->
+                            viewModel.updateEmotionPrediction(prediction) // Update prediction directly
                         }
                     )
                 }
 
-                // Initialize the controller here so it's in scope for the entire class
                 controller = remember {
                     LifecycleCameraController(applicationContext).apply {
                         setEnabledUseCases(CameraController.IMAGE_ANALYSIS)
@@ -61,46 +74,77 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // Initialize the UI with the current prediction
-                updateUI(emotionPrediction)
+                // Update UI and log emotions on each update
+                UpdateUI(emotionPrediction)
             }
         }
     }
 
-    private fun updateUI(prediction: EmotionPrediction) {
-        // Log the probabilities for debugging
-        logEmotionProbabilities(prediction)
+    @Composable
+    private fun UpdateUI(prediction: EmotionPrediction?) {
+        prediction?.let {
+            // Log the probabilities for each emotion on change
+            val previousPrediction = remember { mutableStateOf(it) }
 
-        // Get the highest emotion classification
-        val highestClassification = getHighestEmotion(prediction)
+            if (previousPrediction.value != it) {
+                logEmotionProbabilities(it)
+                previousPrediction.value = it
+            }
 
-        // Update the UI to display the highest emotion
-        setContent {
-            EmotionAIDemoTheme {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    CameraPreview(controller, Modifier.fillMaxSize())
+            // Get the highest emotion classification and update UI
+            val highestClassification = getHighestEmotion(it)
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.TopCenter)
-                    ) {
-                        highestClassification?.let {
-                            Text(
-                                text = it,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.primaryContainer)
-                                    .padding(8.dp),
-                                textAlign = TextAlign.Center,
-                                fontSize = 20.sp,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
+            Box(modifier = Modifier.fillMaxSize()) {
+                CameraPreview(controller, Modifier.fillMaxSize())
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.TopCenter)
+                ) {
+                    if (highestClassification.isNotEmpty()) {
+                        Text(
+                            text = highestClassification,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                .padding(8.dp),
+                            textAlign = TextAlign.Center,
+                            fontSize = 20.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
+                }
+
+                // Add the IconButton just below the CameraPreview
+                IconButton(
+                    onClick = {
+                        controller.cameraSelector =
+                            if (controller.cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
+                                CameraSelector.DEFAULT_FRONT_CAMERA
+                            } else CameraSelector.DEFAULT_BACK_CAMERA
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Cameraswitch,
+                        contentDescription = "Switch camera"
+                    )
                 }
             }
         }
+    }
+
+    private fun logEmotionProbabilities(prediction: EmotionPrediction) {
+        Log.d("AngryCurrent", "Angry: ${prediction.angry}")
+        Log.d("DisgustCurrent", "Disgust: ${prediction.disgust}")
+        Log.d("FearCurrent", "Fear: ${prediction.fear}")
+        Log.d("HappyCurrent", "Happy: ${prediction.happy}")
+        Log.d("NeutralCurrent", "Neutral: ${prediction.neutral}")
+        Log.d("SadCurrent", "Sad: ${prediction.sad}")
+        Log.d("SurpriseCurrent", "Surprise: ${prediction.surprise}")
     }
 
     private fun getHighestEmotion(prediction: EmotionPrediction): String {
@@ -114,16 +158,6 @@ class MainActivity : ComponentActivity() {
             "Surprise" to prediction.surprise
         )
         return emotions.maxByOrNull { it.second }?.first ?: "Unknown"
-    }
-
-    private fun logEmotionProbabilities(prediction: EmotionPrediction) {
-        Log.d(TAG, "Angry: ${prediction.angry}")
-        Log.d(TAG, "Disgust: ${prediction.disgust}")
-        Log.d(TAG, "Fear: ${prediction.fear}")
-        Log.d(TAG, "Happy: ${prediction.happy}")
-        Log.d(TAG, "Neutral: ${prediction.neutral}")
-        Log.d(TAG, "Sad: ${prediction.sad}")
-        Log.d(TAG, "Surprise: ${prediction.surprise}")
     }
 
     private fun hasCameraPermission() = ContextCompat.checkSelfPermission(

@@ -16,8 +16,7 @@ import org.tensorflow.lite.task.core.vision.ImageProcessingOptions
 import org.tensorflow.lite.task.vision.classifier.ImageClassifier
 
 class TfLiteEmotionClassifier(
-    private val context: Context,
-    private val maxResults: Int = 7
+    private val context: Context
 ) : EmotionClassifier {
 
     private var classifier: ImageClassifier? = null
@@ -28,13 +27,13 @@ class TfLiteEmotionClassifier(
             .build()
         val options = ImageClassifier.ImageClassifierOptions.builder()
             .setBaseOptions(baseOptions)
-            .setMaxResults(maxResults)
+            .setMaxResults(7)
             .build()
 
         try {
             classifier = ImageClassifier.createFromFileAndOptions(
                 context,
-                "imageModel.tflite",  // Ensure the file is in the assets folder
+                "ssdrImageModel.tflite",  // Ensure the file is in the assets folder
                 options
             )
             Log.d("TfLiteEmotionClassifier", "Model loaded successfully")
@@ -47,7 +46,6 @@ class TfLiteEmotionClassifier(
         }
     }
 
-    // Corrected image classification code.
     override fun classify(bitmap: Bitmap, rotation: Int): EmotionPrediction {
         if (classifier == null) {
             setupClassifier()
@@ -81,15 +79,18 @@ class TfLiteEmotionClassifier(
                 name to category.score
             }
         }?.toMap() ?: emptyMap()
+        Log.d("emotionScores","Emotion score: ${emotionScores["Category #0"]}")
 
+
+        // Convert the emotionScores map to EmotionPrediction object
         return EmotionPrediction(
-            angry = emotionScores["angry"] ?: 0f,
-            disgust = emotionScores["disgust"] ?: 0f,
-            fear = emotionScores["fear"] ?: 0f,
-            happy = emotionScores["happy"] ?: 0f,
-            neutral = emotionScores["neutral"] ?: 0f,
-            sad = emotionScores["sad"] ?: 0f,
-            surprise = emotionScores["surprise"] ?: 0f
+            angry = emotionScores["Category #0"] ?: 0f,
+            disgust = emotionScores["Category #1"] ?: 0f,
+            fear = emotionScores["Category #2"] ?: 0f,
+            happy = emotionScores["Category #3"] ?: 0f,
+            neutral = emotionScores["Category #4"] ?: 0f,
+            sad = emotionScores["Category #5"] ?: 0f,
+            surprise = emotionScores["Category #6"] ?: 0f
         )
     }
 
@@ -102,4 +103,6 @@ class TfLiteEmotionClassifier(
         }
     }
 }
+
+
 
