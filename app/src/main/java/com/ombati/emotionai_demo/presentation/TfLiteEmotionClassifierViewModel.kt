@@ -5,8 +5,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ombati.emotionai_demo.data.TfLiteEmotionClassifier
-import com.ombati.emotionai_demo.domain.EmotionPrediction
+import com.ombati.emotionai_demo.data.repositories.TfLiteEmotionClassifier
+import com.ombati.emotionai_demo.data.model.EmotionPrediction
 import kotlinx.coroutines.launch
 
 class TfLiteEmotionClassifierViewModel(

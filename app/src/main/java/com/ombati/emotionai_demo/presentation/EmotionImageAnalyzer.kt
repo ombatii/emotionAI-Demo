@@ -3,8 +3,8 @@ package com.ombati.emotionai_demo.presentation
 import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import com.ombati.emotionai_demo.domain.EmotionClassifier
-import com.ombati.emotionai_demo.domain.EmotionPrediction
+import com.ombati.emotionai_demo.data.repositories.EmotionClassifier
+import com.ombati.emotionai_demo.data.model.EmotionPrediction
 
 class EmotionImageAnalyzer(
     private val classifier: EmotionClassifier,

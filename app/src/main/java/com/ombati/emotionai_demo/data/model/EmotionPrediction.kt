@@ -1,4 +1,4 @@
-package com.ombati.emotionai_demo.domain
+package com.ombati.emotionai_demo.data.model
 
 data class EmotionPrediction(
     val angry: Float,

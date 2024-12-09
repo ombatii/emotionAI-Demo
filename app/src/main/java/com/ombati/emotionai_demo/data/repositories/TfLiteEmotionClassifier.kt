@@ -1,11 +1,10 @@
-package com.ombati.emotionai_demo.data
+package com.ombati.emotionai_demo.data.repositories
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import android.view.Surface
-import com.ombati.emotionai_demo.domain.EmotionClassifier
-import com.ombati.emotionai_demo.domain.EmotionPrediction
+import com.ombati.emotionai_demo.data.model.EmotionPrediction
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.common.ops.NormalizeOp
 import org.tensorflow.lite.support.image.ImageProcessor

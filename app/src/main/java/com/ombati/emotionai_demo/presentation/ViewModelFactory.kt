@@ -2,7 +2,7 @@ package com.ombati.emotionai_demo.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.ombati.emotionai_demo.data.TfLiteEmotionClassifier
+import com.ombati.emotionai_demo.data.repositories.TfLiteEmotionClassifier
 
 
 class TfLiteEmotionClassifierViewModelFactory(
