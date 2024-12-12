@@ -28,6 +28,7 @@ fun CameraScreen(
     onStartCameraClick: () -> Unit,
     isCameraStarted: Boolean,
     preview: View,
+    graphicOverlay: GraphicOverlay<GraphicOverlay.Graphic>,
     graphicOverlayModifier: Modifier = Modifier.fillMaxSize()
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
@@ -38,7 +39,7 @@ fun CameraScreen(
 
         AndroidView(
             factory = { context ->
-                GraphicOverlay<GraphicOverlay.Graphic>(context, null)
+                graphicOverlay
             },
             modifier = graphicOverlayModifier
         )

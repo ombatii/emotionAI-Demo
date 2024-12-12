@@ -69,7 +69,8 @@ class MainActivity : ComponentActivity() {
                             isCameraStarted = true
                         },
                         graphicOverlayModifier = Modifier.fillMaxSize(),
-                        preview = previewView
+                        preview = previewView,
+                        graphicOverlay = graphicOverlay
                     )
                 }
             }
