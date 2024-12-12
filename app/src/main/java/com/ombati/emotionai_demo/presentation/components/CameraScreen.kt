@@ -1,6 +1,7 @@
 package com.ombati.emotionai_demo.presentation.components
 
 
+import android.view.View
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
@@ -26,12 +27,13 @@ fun CameraScreen(
     onStopCameraClick: () -> Unit,
     onStartCameraClick: () -> Unit,
     isCameraStarted: Boolean,
+    preview: View,
     graphicOverlayModifier: Modifier = Modifier.fillMaxSize()
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         CameraPreview(
-            controller = cameraController,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            preview = preview
         )
 
         AndroidView(

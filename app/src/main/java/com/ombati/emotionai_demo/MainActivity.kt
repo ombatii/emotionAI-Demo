@@ -28,8 +28,6 @@ import com.ombati.emotionai_demo.ui.theme.EmotionAIDemoTheme
 
 class MainActivity : ComponentActivity() {
 
-    private lateinit var cameraManager: CameraManager
-    private lateinit var lifecycleCameraController: LifecycleCameraController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,14 +35,14 @@ class MainActivity : ComponentActivity() {
         val previewView = PreviewView(this)
         val graphicOverlay = GraphicOverlay<GraphicOverlay.Graphic>(this, null)
 
-        cameraManager = CameraManager(
+        val cameraManager = CameraManager(
             context = this,
             previewView = previewView,
             graphicOverlay = graphicOverlay,
             lifecycleOwner = this
         )
 
-        lifecycleCameraController = LifecycleCameraController(this)
+        val lifecycleCameraController = LifecycleCameraController(this)
 
         if (!hasCameraPermission()) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 0)
@@ -70,7 +68,8 @@ class MainActivity : ComponentActivity() {
                             cameraManager.cameraStart()
                             isCameraStarted = true
                         },
-                        graphicOverlayModifier = Modifier.fillMaxSize()
+                        graphicOverlayModifier = Modifier.fillMaxSize(),
+                        preview = previewView
                     )
                 }
             }
@@ -83,4 +82,3 @@ class MainActivity : ComponentActivity() {
         ) == PackageManager.PERMISSION_GRANTED
     }
 }
-

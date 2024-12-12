@@ -78,6 +78,7 @@ class CameraManager(
         } else {
             CameraSelector.LENS_FACING_BACK
         }
+        CameraUtils.toggleSelector()
         cameraStart()
     }
 

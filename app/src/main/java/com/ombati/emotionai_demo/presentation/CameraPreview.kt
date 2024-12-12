@@ -1,5 +1,6 @@
 package com.ombati.emotionai_demo.presentation
 
+import android.view.View
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
@@ -10,16 +11,13 @@ import androidx.compose.ui.viewinterop.AndroidView
 
 @Composable
 fun CameraPreview(
-    controller: LifecycleCameraController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    preview: View
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     AndroidView(
         factory = {
-            PreviewView(it).apply {
-                this.controller = controller
-                controller.bindToLifecycle(lifecycleOwner)
-            }
+            preview
         },
         modifier = modifier
     )
